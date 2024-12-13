@@ -1,61 +1,1789 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Catalog - Land Surveyors United</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script defer src="../src/filters.js"></script>
-  <script defer src="../src/state-selector.js"></script>
-  <script defer src="../src/pagination.js"></script>
-  <script defer src="../src/courses.js"></script>
+<html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Catalog - Land Surveyors United Learning Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.course-card {
+  animation: fadeIn 0.5s ease-out forwards;
+  transition: all 0.3s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.filter-button.active {
+  background-color: #f97316;
+  color: white;
+}
+
+.search-input:focus {
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F97316;
+  border-radius: 3px;
+}
+
+/* Filter Tags Animation */
+.filter-tag {
+  transition: all 0.3s ease;
+}
+
+.filter-tag:hover {
+  transform: translateX(5px);
+}
+
+.filter-tag.active {
+  color: #F97316;
+  transform: translateX(5px);
+}
+
+.filter-tag.active span.text-sm {
+  color: #F97316;
+}
+
+/* Progress Bar Animation */
+@keyframes progressFill {
+  from { width: 0%; }
+  to { width: var(--progress); }
+}
+
+.progress-bar {
+  animation: progressFill 1s ease-out forwards;
+}
+</style>
 </head>
 <body class="bg-gray-900 text-white">
-  <nav class="bg-gray-800 shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="flex justify-between items-center h-16">
+
+<nav class="bg-gray-800 shadow-lg sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center">
         <a href="/" class="flex items-center">
-          <img src="favicon.ico" alt="Logo" class="h-8 w-auto mr-3">
+          <img src="https://storage.ning.com/topology/rest/1.0/file/get/12222126291?profile=original" alt="Logo" class="h-8 w-auto mr-3">
           <span class="text-xl font-bold">Land Surveyors United</span>
         </a>
-        <div class="hidden md:flex items-center space-x-8">
-          <a href="/courses" class="text-white hover:text-orange-400"><i class="fas fa-graduation-cap mr-2"></i>All Courses</a>
-          <a href="/my-courses" class="text-gray-300 hover:text-orange-400"><i class="fas fa-book-reader mr-2"></i>My Learning</a>
-          <a href="/certificates" class="text-gray-300 hover:text-orange-400"><i class="fas fa-certificate mr-2"></i>Certificates</a>
-        </div>
+      </div>
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="/courses" class="text-white hover:text-orange-400 transition">
+          <i class="fas fa-graduation-cap mr-2"></i>All Courses
+        </a>
+        <a href="/my-courses" class="text-gray-300 hover:text-orange-400 transition">
+          <i class="fas fa-book-reader mr-2"></i>My Learning
+        </a>
+        <a href="/certificates" class="text-gray-300 hover:text-orange-400 transition">
+          <i class="fas fa-certificate mr-2"></i>Certificates
+        </a>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <main class="max-w-7xl mx-auto px-4 py-8">
-    <header class="mb-12">
-      <h1 class="text-4xl font-bold text-orange-400 mb-4">Course Catalog</h1>
-      <p class="text-xl text-gray-300" id="state-header">Explore our comprehensive collection of land surveying courses</p>
-    </header>
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Header Section -->
+  <div class="mb-12">
+    <h1 class="text-4xl font-bold text-orange-400 mb-4">Course Catalog</h1>
+    <p class="text-xl text-gray-300">Explore our comprehensive collection of land surveying courses</p>
+  </div>
 
-    <section id="filters" class="mb-8">
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <!-- State Selector -->
-        <div class="lg:col-span-1">
-          <label for="state-select" class="block text-lg font-semibold mb-2">Select State</label>
-          <select id="state-select" class="w-full bg-gray-800 text-white px-4 py-3 rounded-lg"></select>
+  <!-- State Selector -->
+  <div class="mb-8">
+    <div class="max-w-md">
+      <label for="state-select" class="block text-lg font-semibold mb-2">Select State</label>
+      <select id="state-select" class="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" onchange="updateCoursesForState(this.value)">
+  <option value="">Choose a state...</option>
+  <option value="AL">Alabama</option>
+  <option value="AK">Alaska</option>
+  <option value="AZ">Arizona</option>
+  <option value="AR">Arkansas</option>
+  <option value="CA">California</option>
+  <option value="CO">Colorado</option>
+  <option value="CT">Connecticut</option>
+  <option value="DE">Delaware</option>
+  <option value="FL">Florida</option>
+  <option value="GA">Georgia</option>
+  <option value="HI">Hawaii</option>
+  <option value="ID">Idaho</option>
+  <option value="IL">Illinois</option>
+  <option value="IN">Indiana</option>
+  <option value="IA">Iowa</option>
+  <option value="KS">Kansas</option>
+  <option value="KY">Kentucky</option>
+  <option value="LA">Louisiana</option>
+  <option value="ME">Maine</option>
+  <option value="MD">Maryland</option>
+  <option value="MA">Massachusetts</option>
+  <option value="MI">Michigan</option>
+  <option value="MN">Minnesota</option>
+  <option value="MS">Mississippi</option>
+  <option value="MO">Missouri</option>
+  <option value="MT">Montana</option>
+  <option value="NE">Nebraska</option>
+  <option value="NV">Nevada</option>
+  <option value="NH">New Hampshire</option>
+  <option value="NJ">New Jersey</option>
+  <option value="NM">New Mexico</option>
+  <option value="NY">New York</option>
+  <option value="NC">North Carolina</option>
+  <option value="ND">North Dakota</option>
+  <option value="OH">Ohio</option>
+  <option value="OK">Oklahoma</option>
+  <option value="OR">Oregon</option>
+  <option value="PA">Pennsylvania</option>
+  <option value="RI">Rhode Island</option>
+  <option value="SC">South Carolina</option>
+  <option value="SD">South Dakota</option>
+  <option value="TN">Tennessee</option>
+  <option value="TX">Texas</option>
+  <option value="UT">Utah</option>
+  <option value="VT">Vermont</option>
+  <option value="VA">Virginia</option>
+  <option value="WA">Washington</option>
+  </select>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
+    <!-- Filters Sidebar -->
+    <div class="lg:col-span-1">
+      <div class="bg-gray-800 rounded-lg p-6 sticky top-24">
+        <h2 class="text-xl font-bold mb-6">Filters</h2>
+        
+        <!-- Level Filter -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3">Level</h3>
+          <div class="space-y-2">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-orange-500 rounded" data-filter="level" value="Beginner">
+              <span class="text-gray-300">Beginner (12)</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-orange-500 rounded" data-filter="level" value="Intermediate">
+              <span class="text-gray-300">Intermediate (8)</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-orange-500 rounded" data-filter="level" value="Advanced">
+              <span class="text-gray-300">Advanced (5)</span>
+            </label>
+          </div>
         </div>
-        <!-- Search Bar -->
-        <div class="lg:col-span-3">
-          <div class="relative">
-            <input type="text" placeholder="Search courses..." id="search-bar" class="w-full bg-gray-800 text-white px-4 py-3 rounded-lg pl-12">
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+
+        <!-- Category Filter -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3">Category</h3>
+          <div class="space-y-2">
+            <div class="filter-tag flex items-center justify-between text-gray-300 hover:text-orange-400 cursor-pointer">
+              <span>Basic Fundamentals</span>
+              <span class="text-sm">(6)</span>
+            </div>
+            <div class="filter-tag flex items-center justify-between text-gray-300 hover:text-orange-400 cursor-pointer">
+              <span>Equipment Operations</span>
+              <span class="text-sm">(4)</span>
+            </div>
+            <div class="filter-tag flex items-center justify-between text-gray-300 hover:text-orange-400 cursor-pointer">
+              <span>Legal Framework</span>
+              <span class="text-sm">(3)</span>
+            </div>
+            <div class="filter-tag flex items-center justify-between text-gray-300 hover:text-orange-400 cursor-pointer">
+              <span>Technology Integration</span>
+              <span class="text-sm">(5)</span>
+            </div>
+            <div class="filter-tag flex items-center justify-between text-gray-300 hover:text-orange-400 cursor-pointer">
+              <span>Field Procedures</span>
+              <span class="text-sm">(7)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Duration Filter -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3">Duration</h3>
+          <div class="space-y-2">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-orange-500 rounded" data-filter="duration" value="0-10">
+              <span class="text-gray-300">0-10 hours (5)</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-orange-500 rounded" data-filter="duration" value="10-20">
+              <span class="text-gray-300">10-20 hours (8)</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-orange-500 rounded" data-filter="duration" value="20+">
+              <span class="text-gray-300">20+ hours (12)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <button class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 transition">
+          Clear All Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div class="lg:col-span-3">
+      <!-- Search Bar -->
+      <div class="mb-8">
+        <div class="relative">
+          <input type="text" placeholder="Search courses..." class="w-full bg-gray-800 text-white px-4 py-3 rounded-lg pl-12 search-input focus:outline-none">
+          <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+
+      <!-- Course Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Basic Fundamentals -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-graduation-cap text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Basic Fundamentals</h3>
+              <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-sm">Beginner</span>
+            </div>
+            <p class="text-gray-400 mb-4">Essential surveying concepts and techniques for beginners.</p>
+            <!-- Course content -->
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>40-50 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>12 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>1,234 Students</span>
+              </div>
+            </div>
+            <a href="/courses/basic-fundamentals" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Equipment Operations -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-tools text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Equipment Operations</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Master modern surveying equipment and tools.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>30-40 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>8 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>856 Students</span>
+              </div>
+            </div>
+            <a href="/courses/equipment-operations" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Legal Framework -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-balance-scale text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Legal Framework</h3>
+              <span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-sm">Advanced</span>
+            </div>
+            <p class="text-gray-400 mb-4">Understanding legal aspects of land surveying.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>25-35 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>6 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>645 Students</span>
+              </div>
+            </div>
+            <a href="/courses/legal-framework" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Technology Integration -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-laptop-code text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Technology Integration</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Modern surveying technologies and software applications.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>35-45 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>10 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>923 Students</span>
+              </div>
+            </div>
+            <a href="/courses/technology-integration" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Advanced Measurement -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-ruler-combined text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Advanced Measurement</h3>
+              <span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-sm">Advanced</span>
+            </div>
+            <p class="text-gray-400 mb-4">Precision measurement techniques and advanced instrumentation.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>45-55 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>14 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>567 Students</span>
+              </div>
+            </div>
+            <a href="/courses/advanced-measurement" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- GIS Fundamentals -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-globe text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">GIS Fundamentals</h3>
+              <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-sm">Beginner</span>
+            </div>
+            <p class="text-gray-400 mb-4">Introduction to Geographic Information Systems for surveyors.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>30-40 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>8 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>1,102 Students</span>
+              </div>
+            </div>
+            <a href="/courses/gis-fundamentals" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Boundary Law -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-border-style text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Boundary Law</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Legal principles of boundary determination and documentation.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>35-45 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>10 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>789 Students</span>
+              </div>
+            </div>
+            <a href="/courses/boundary-law" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- GPS/GNSS Technology -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-satellite text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">GPS/GNSS Technology</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Modern satellite positioning systems and their applications.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>40-50 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>12 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>945 Students</span>
+              </div>
+            </div>
+            <a href="/courses/gps-gnss-technology" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Construction Surveying -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-hard-hat text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Construction Surveying</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Surveying techniques for construction projects.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>35-45 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>10 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>834 Students</span>
+              </div>
+            </div>
+            <a href="/courses/construction-surveying" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Business Management -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-briefcase text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Business Management</h3>
+              <span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-sm">Advanced</span>
+            </div>
+            <p class="text-gray-400 mb-4">Managing a successful surveying business.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>30-40 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>8 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>567 Students</span>
+              </div>
+            </div>
+            <a href="/courses/business-management" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Ethics in Surveying -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-handshake text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Ethics in Surveying</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Professional ethics and responsibility in land surveying.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>20-30 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>6 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>678 Students</span>
+              </div>
+            </div>
+            <a href="/courses/ethics-in-surveying" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Digital Mapping -->
+        <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+            <i class="fas fa-map-marked-alt text-6xl text-orange-400"></i>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold">Digital Mapping</h3>
+              <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-sm">Intermediate</span>
+            </div>
+            <p class="text-gray-400 mb-4">Modern digital mapping techniques and technologies.</p>
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-clock mr-2 text-orange-400"></i>
+                <span>35-45 hours</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-book mr-2 text-orange-400"></i>
+                <span>10 Modules</span>
+              </div>
+              <div class="flex items-center text-sm text-gray-300">
+                <i class="fas fa-users mr-2 text-orange-400"></i>
+                <span>890 Students</span>
+              </div>
+            </div>
+            <a href="/courses/digital-mapping" class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-8 flex justify-center">
+        <nav class="flex items-center space-x-2">
+          <button class="px-3 py-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="px-4 py-2 rounded-lg bg-orange-500 text-white">1</button>
+          <button class="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700">2</button>
+          <button class="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700">3</button>
+          <button class="px-3 py-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Filter functionality
+document.querySelectorAll('.filter-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    tag.classList.toggle('text-orange-400');
+  });
+});
+
+// Search functionality
+const searchInput = document.querySelector('.search-input');
+const courseCards = document.querySelectorAll('.course-card');
+
+searchInput.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  
+  courseCards.forEach(card => {
+    const title = card.querySelector('h3').textContent.toLowerCase();
+    const description = card.querySelector('p').textContent.toLowerCase();
+    
+    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+});
+
+// Pagination functionality
+let currentPage = 1;
+const itemsPerPage = 4; // Number of courses per page
+let filteredCourses = []; // Will store filtered course list
+
+function updatePagination(courses) {
+  // Calculate total pages
+  const totalPages = Math.ceil(courses.length / itemsPerPage);
+  
+  // Get pagination nav
+  const paginationNav = document.querySelector('.flex.items-center.space-x-2');
+  
+  // Generate pagination buttons
+  let paginationHTML = `
+    <button class="px-3 py-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
+            onclick="changePage('prev')" ${currentPage === 1 ? 'disabled' : ''}>
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  `;
+  
+  // Add numbered page buttons
+  for (let i = 1; i <= totalPages; i++) {
+    paginationHTML += `
+      <button class="px-4 py-2 rounded-lg ${currentPage === i ? 'bg-orange-500' : 'bg-gray-800'} text-white hover:bg-gray-700"
+              onclick="changePage(${i})">
+        ${i}
+      </button>
+    `;
+  }
+  
+  paginationHTML += `
+    <button class="px-3 py-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}"
+            onclick="changePage('next')" ${currentPage === totalPages ? 'disabled' : ''}>
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  `;
+  
+  paginationNav.innerHTML = paginationHTML;
+  
+  // Show courses for current page
+  displayCourses(courses);
+}
+
+function displayCourses(courses) {
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const coursesToShow = courses.slice(startIndex, endIndex);
+  
+  const courseGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2');
+  if (!courseGrid) return;
+  
+  courseGrid.innerHTML = coursesToShow.map(course => {
+    const levelClass = course.level === 'Beginner' ? 'green' : 
+                      course.level === 'Intermediate' ? 'yellow' : 'red';
+    
+    const chapterList = course.chapters.map(chapter => 
+      `<div class="mb-2 text-sm">
+        <div class="font-semibold text-orange-400">${chapter.title}</div>
+        <div class="text-gray-400 text-xs ml-2">
+          ${chapter.submodules.length} modules + field exercise
+        </div>
+      </div>`
+    ).join('');
+
+    return `
+      <div class="course-card bg-gray-800 rounded-lg overflow-hidden">
+        <div class="aspect-w-16 aspect-h-9 bg-gray-700 p-8 flex items-center justify-center">
+          <i class="fas fa-${course.icon} text-6xl text-orange-400"></i>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-bold">${course.title} - ${course.state}</h3>
+            <span class="bg-${levelClass}-500/20 text-${levelClass}-400 px-2 py-1 rounded text-sm">${course.level}</span>
+          </div>
+          <p class="text-gray-400 mb-4">${course.description.replace('{STATE}', course.state)}</p>
+          
+          <!-- Chapter Preview -->
+          <div class="mb-4 p-3 bg-gray-700 rounded-lg">
+            <h4 class="font-semibold mb-2">Course Structure:</h4>
+            ${chapterList}
+          </div>
+
+          <div class="space-y-3 mb-4">
+            <div class="flex items-center text-sm text-gray-300">
+              <i class="fas fa-clock mr-2 text-orange-400"></i>
+              <span>${course.duration}</span>
+            </div>
+            <div class="flex items-center text-sm text-gray-300">
+              <i class="fas fa-book mr-2 text-orange-400"></i>
+              <span>${course.modules} Modules</span>
+            </div>
+            <div class="flex items-center text-sm text-gray-300">
+              <i class="fas fa-users mr-2 text-orange-400"></i>
+              <span>${course.students} Students</span>
+            </div>
+          </div>
+          <div class="flex flex-col space-y-2">
+            <a href="/courses/${course.state.toLowerCase()}/${course.title.toLowerCase().replace(/\s+/g, '-')}" 
+               class="block text-center bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+              View Course
+            </a>
+            <a href="/write-course/${course.state}/${course.title.toLowerCase().replace(/\s+/g, '-')}" 
+               class="block text-center bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition">
+              Write This Course
+            </a>
           </div>
         </div>
       </div>
-    </section>
+    `;
+  }).join('');
+}
 
-    <!-- Course Grid -->
-    <section id="courses" class="grid grid-cols-1 md:grid-cols-2 gap-6"></section>
+function changePage(page) {
+  if (page === 'prev' && currentPage > 1) {
+    currentPage--;
+  } else if (page === 'next' && currentPage < Math.ceil(filteredCourses.length / itemsPerPage)) {
+    currentPage++;
+  } else if (typeof page === 'number') {
+    currentPage = page;
+  }
+  
+  updatePagination(filteredCourses);
+}
 
-    <!-- Pagination -->
-    <div id="pagination" class="mt-8 flex justify-center"></div>
-  </main>
-</body>
-</html>
+// Modify updateCoursesForState to use pagination
+function updateCoursesForState(state) {
+  if (!state) return;
+
+  // Get course templates (keep existing array)
+  const courseTemplates = [
+    {
+      title: "Basic Fundamentals",
+      description: "Essential surveying concepts and techniques specific to {STATE} regulations.",
+      icon: "graduation-cap",
+      level: "Beginner",
+      duration: "40-50 hours",
+      modules: 12,
+      students: 1234,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Basic Fundamentals in ${state}`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental surveying principles specific to ${state}`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of ${state} regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical surveying exercise following ${state} guidelines`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: `${state} documentation requirements and procedures`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: ${state} Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: `${state} surveying standards and protocols`
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: `Regional factors affecting surveying in ${state}`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: `Professional responsibilities in ${state}`
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    },
+    {
+      title: "Equipment Operations",
+      description: "Master modern surveying equipment and tools with focus on {STATE} standards.",
+      icon: "tools",
+      level: "Intermediate", 
+      duration: "30-40 hours",
+      modules: 8,
+      students: 856,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Equipment Operations in ${state}`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental equipment operations principles specific to ${state}`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of ${state} regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical equipment operations exercise following ${state} guidelines`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: `${state} documentation requirements and procedures`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: ${state} Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: `${state} surveying standards and protocols`
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: `Regional factors affecting surveying in ${state}`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: `Professional responsibilities in ${state}`
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    },
+    {
+      title: "Legal Framework",
+      description: "Understanding {STATE} laws and regulations for land surveying practice.",
+      icon: "balance-scale",
+      level: "Advanced",
+      duration: "25-35 hours",
+      modules: 6,
+      students: 645,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Legal Framework in ${state}`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental legal framework principles specific to ${state}`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of ${state} regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical legal framework exercise following ${state} guidelines`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: `${state} documentation requirements and procedures`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: ${state} Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: `${state} surveying standards and protocols`
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: `Regional factors affecting surveying in ${state}`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: `Professional responsibilities in ${state}`
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    },
+    {
+      title: "Technology Integration",
+      description: "Modern surveying technologies and software applications used in {STATE}.",
+      icon: "laptop-code",
+      level: "Intermediate",
+      duration: "35-45 hours",
+      modules: 10,
+      students: 923,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Technology Integration in ${state}`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental technology integration principles specific to ${state}`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of ${state} regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical technology integration exercise following ${state} guidelines`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: `${state} documentation requirements and procedures`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: ${state} Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: `${state} surveying standards and protocols`
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: `Regional factors affecting surveying in ${state}`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: `Professional responsibilities in ${state}`
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    }
+  ];
+
+  // Update filtered courses
+  filteredCourses = courseTemplates.map(course => ({
+    ...course,
+    state: state
+  }));
+
+  currentPage = 1;
+  updatePagination(filteredCourses);
+  
+  const headerText = document.querySelector('.text-xl.text-gray-300');
+  if (headerText) {
+    headerText.textContent = `Explore our comprehensive collection of land surveying courses for ${state}`;
+  }
+}
+
+// Update search functionality to work with pagination
+searchInput.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  
+  // Filter courses based on search
+  filteredCourses = courseTemplates.filter(course => {
+    return course.title.toLowerCase().includes(searchTerm) || 
+           course.description.toLowerCase().includes(searchTerm);
+  });
+  
+  currentPage = 1;
+  updatePagination(filteredCourses);
+});
+
+function applyFilters() {
+  const levelFilters = Array.from(document.querySelectorAll('[data-filter="level"]:checked'))
+    .map(cb => cb.value);
+    
+  const categoryFilters = Array.from(document.querySelectorAll('.filter-tag.active'))
+    .map(tag => tag.querySelector('span').textContent);
+    
+  const durationFilters = Array.from(document.querySelectorAll('[data-filter="duration"]:checked'))
+    .map(cb => cb.value);
+
+  // Filter the courses
+  const filtered = filteredCourses.filter(course => {
+    const levelMatch = levelFilters.length === 0 || levelFilters.includes(course.level);
+    const categoryMatch = categoryFilters.length === 0 || categoryFilters.includes(course.title);
+    
+    const duration = parseInt(course.duration);
+    const durationMatch = durationFilters.length === 0 || durationFilters.some(filter => {
+      if (filter === '0-10') return duration <= 10;
+      if (filter === '10-20') return duration > 10 && duration <= 20;
+      if (filter === '20+') return duration > 20;
+      return false;
+    });
+
+    return levelMatch && categoryMatch && durationMatch;
+  });
+
+  // Update the display
+  currentPage = 1;
+  updatePagination(filtered);
+}
+
+// Modify the existing checkbox listeners
+document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+  // Add data attributes for filtering
+  if (checkbox.parentElement.textContent.includes('Beginner')) {
+    checkbox.setAttribute('data-filter', 'level');
+    checkbox.value = 'Beginner';
+  } else if (checkbox.parentElement.textContent.includes('Intermediate')) {
+    checkbox.setAttribute('data-filter', 'level');
+    checkbox.value = 'Intermediate';
+  } else if (checkbox.parentElement.textContent.includes('Advanced')) {
+    checkbox.setAttribute('data-filter', 'level');
+    checkbox.value = 'Advanced';
+  } else if (checkbox.parentElement.textContent.includes('hours')) {
+    checkbox.setAttribute('data-filter', 'duration');
+    if (checkbox.parentElement.textContent.includes('0-10')) checkbox.value = '0-10';
+    else if (checkbox.parentElement.textContent.includes('10-20')) checkbox.value = '10-20';
+    else checkbox.value = '20+';
+  }
+
+  checkbox.addEventListener('change', () => {
+    const label = checkbox.parentElement;
+    if (checkbox.checked) {
+      label.classList.add('text-orange-400');
+    } else {
+      label.classList.remove('text-orange-400');
+    }
+    applyFilters();
+  });
+});
+
+// Modify filter tag click handlers
+document.querySelectorAll('.filter-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    tag.classList.toggle('active');
+    tag.classList.toggle('text-orange-400');
+    applyFilters();
+  });
+});
+
+// Update the clear filters button
+document.querySelector('button.w-full').addEventListener('click', () => {
+  // Clear checkboxes
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.checked = false;
+    checkbox.parentElement.classList.remove('text-orange-400');
+  });
+  
+  // Clear filter tags
+  document.querySelectorAll('.filter-tag').forEach(tag => {
+    tag.classList.remove('text-orange-400', 'active');
+  });
+  
+  // Clear search
+  searchInput.value = '';
+  
+  // Reset state selector
+  document.getElementById('state-select').value = '';
+  
+  // Reset filters and display
+  filteredCourses = courseTemplates;
+  currentPage = 1;
+  updatePagination(filteredCourses);
+});
+
+// Checkbox animation
+document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+  checkbox.addEventListener('change', () => {
+    const label = checkbox.parentElement;
+    if (checkbox.checked) {
+      label.classList.add('text-orange-400');
+    } else {
+      label.classList.remove('text-orange-400');
+    }
+  });
+});
+
+// Clear filters
+document.querySelector('button').addEventListener('click', () => {
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.checked = false;
+    checkbox.parentElement.classList.remove('text-orange-400');
+  });
+  
+  document.querySelectorAll('.filter-tag').forEach(tag => {
+    tag.classList.remove('text-orange-400');
+  });
+  
+  courseCards.forEach(card => {
+    card.style.display = 'block';
+  });
+  
+  searchInput.value = '';
+  
+  // Reset state selector
+  document.getElementById('state-select').value = '';
+});
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', () => {
+  const stateSelect = document.getElementById('state-select');
+  stateSelect.addEventListener('change', (e) => {
+    updateCoursesForState(e.target.value);
+  });
+  
+  // Initialize with all courses
+  const courseTemplates = [
+    {
+      title: "Basic Fundamentals",
+      description: "Essential surveying concepts and techniques specific to {STATE} regulations.",
+      icon: "graduation-cap",
+      level: "Beginner",
+      duration: "40-50 hours",
+      modules: 12,
+      students: 1234,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Basic Fundamentals`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental surveying principles`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical surveying exercise`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: "Documentation requirements and procedures"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: State Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: "Surveying standards and protocols"
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: "Regional factors affecting surveying"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: "Professional responsibilities"
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    },
+    {
+      title: "Equipment Operations",
+      description: "Master modern surveying equipment and tools with focus on {STATE} standards.",
+      icon: "tools",
+      level: "Intermediate", 
+      duration: "30-40 hours",
+      modules: 8,
+      students: 856,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Equipment Operations`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental equipment operations principles`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical equipment operations exercise`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: "Documentation requirements and procedures"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: State Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: "Surveying standards and protocols"
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: "Regional factors affecting surveying"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: "Professional responsibilities"
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    },
+    {
+      title: "Legal Framework",
+      description: "Understanding {STATE} laws and regulations for land surveying practice.",
+      icon: "balance-scale",
+      level: "Advanced",
+      duration: "25-35 hours",
+      modules: 6,
+      students: 645,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Legal Framework`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental legal framework principles`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical legal framework exercise`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: "Documentation requirements and procedures"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: State Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: "Surveying standards and protocols"
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: "Regional factors affecting surveying"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: "Professional responsibilities"
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    },
+    {
+      title: "Technology Integration",
+      description: "Modern surveying technologies and software applications used in {STATE}.",
+      icon: "laptop-code",
+      level: "Intermediate",
+      duration: "35-45 hours",
+      modules: 10,
+      students: 923,
+      chapters: [
+        {
+          title: `Chapter 1: Introduction to Technology Integration`,
+          submodules: [
+            {
+              title: "1.1 Core Concepts",
+              description: `Understanding fundamental technology integration principles`
+            },
+            {
+              title: "1.2 State Requirements", 
+              description: `Overview of regulations and requirements`
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 1",
+            description: `Practical technology integration exercise`,
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 2: Technical Fundamentals`,
+          submodules: [
+            {
+              title: "2.1 Equipment and Tools",
+              description: "Technical specifications and proper usage"
+            },
+            {
+              title: "2.2 Documentation",
+              description: "Documentation requirements and procedures"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 2",
+            description: "Hands-on equipment operation and documentation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: `Chapter 3: State Specific Procedures`,
+          submodules: [
+            {
+              title: "3.1 State Standards",
+              description: "Surveying standards and protocols"
+            },
+            {
+              title: "3.2 Local Considerations",
+              description: "Regional factors affecting surveying"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 3",
+            description: "Implementation of state standards in the field",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 4: Advanced Applications",
+          submodules: [
+            {
+              title: "4.1 Special Cases",
+              description: "Complex surveying scenarios and solutions"
+            },
+            {
+              title: "4.2 Technology Integration",
+              description: "Modern tools and software applications"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 4",
+            description: "Advanced technical implementation",
+            duration: "4-6 hours"
+          }
+        },
+        {
+          title: "Chapter 5: Professional Practice",
+          submodules: [
+            {
+              title: "5.1 Ethics and Liability",
+              description: "Professional responsibilities"
+            },
+            {
+              title: "5.2 Business Operations",
+              description: "Practice management and client relations"
+            }
+          ],
+          fieldExercise: {
+            title: "Field Application 5",
+            description: "Professional practice simulation",
+            duration: "4-6 hours"
+          }
+        }
+      ]
+    }
+  ];
+
+  filteredCourses = courseTemplates;
+  updatePagination(filteredCourses);
+});
+</script>
+
+</body></html>
